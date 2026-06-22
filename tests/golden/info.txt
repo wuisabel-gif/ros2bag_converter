@@ -1,0 +1,15 @@
+Messages:   6
+Duration:   0.80 s
+Start:      1970-01-01 00:00:01.000 UTC
+End:        1970-01-01 00:00:01.800 UTC
+Storage:    sqlite3
+Topics:     4
+
+  /chatter
+    type: std_msgs/msg/String   count: 2   decodable
+  /imu
+    type: sensor_msgs/msg/Imu   count: 1   decodable
+  /tf
+    type: tf2_msgs/msg/TFMessage   count: 1   decodable
+  /widget
+    type: my_pkg/msg/Widget   count: 2   decodable
