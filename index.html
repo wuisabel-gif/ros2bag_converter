@@ -205,7 +205,7 @@ body::after{
   .dd-arrow{transform:rotate(90deg);justify-self:center;}
 }
 /* demo video */
-.demo-video{max-width:780px;margin:0 auto 34px;text-align:center;}
+.demo-video{max-width:780px;margin:48px auto 0;text-align:center;}
 .demo-video .dv-label{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:12px;}
 .demo-video .dv-frame{position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#070c16;box-shadow:0 10px 40px rgba(0,0,0,.35);}
 .demo-video .dv-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
@@ -469,13 +469,6 @@ main.shell{padding-bottom:32px;}
 
   <!-- Hero / upload -->
   <section id="hero" class="hero">
-    <!-- demo video -->
-    <div class="demo-video">
-      <div class="dv-label">See it in action</div>
-      <div class="dv-frame">
-        <iframe src="https://www.youtube-nocookie.com/embed/Ah4hHxRI_uk" title="ROS 2 Bag Converter Demo" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-      </div>
-    </div>
     <h1>Read your dive logs<br>without <span class="v">ROS&nbsp;2</span> installed</h1>
     <p class="lede">Drop a ROS&nbsp;2 bag and inspect every topic, then export to clean CSV or JSON — all in your browser, your data never leaving this machine. Working with <span class="mono">.mcap</span> or scripting a pipeline? There's a Node &amp; Python CLI too.</p>
     <p class="explainer">A ROS&nbsp;2 bag hides your data inside a SQLite <span class="mono">.db3</span> where every message is a raw, <span class="mono">CDR</span>-serialized binary blob. Open it without ROS&nbsp;2 and you get unreadable bytes — not timestamps, not sensor values. This tool decodes those blobs in your browser and hands you clean, spreadsheet-ready <span class="mono">CSV</span> and <span class="mono">JSON</span>.</p>
@@ -534,6 +527,14 @@ main.shell{padding-bottom:32px;}
         </a>
       </div>
       <p class="ch-note">Reads SQLite <span class="mono">.db3</span> and MCAP <span class="mono">.mcap</span> · exports CSV &amp; JSON · <a href="https://github.com/wuisabel-gif/ros2bag_converter" target="_blank" rel="noopener noreferrer">View on GitHub →</a></p>
+    </div>
+
+    <!-- demo video -->
+    <div class="demo-video">
+      <div class="dv-label">See it in action</div>
+      <div class="dv-frame">
+        <iframe src="https://www.youtube-nocookie.com/embed/Ah4hHxRI_uk" title="ROS 2 Bag Converter Demo" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      </div>
     </div>
   </section>
 
