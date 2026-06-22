@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ROS 2 Bag Converter — .db3 → CSV / JSON</title>
 <meta name="description" content="Inspect ROS 2 bag .db3 files and export topics to CSV and JSON, entirely in your browser. No ROS 2 install, nothing uploaded to a server." />
+<meta name="keywords" content="ROS 2, rosbag, ros2 bag, .db3, sqlite, CDR, rosbag2, CSV export, JSON export, robotics, point cloud, sensor data, mcap, webassembly, sql.js, browser tool, Humble, Iron, Jazzy" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
 <style>
 @font-face{
@@ -112,6 +113,11 @@ body::after{
 .status-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--signal);box-shadow:0 0 9px var(--signal);flex:none;}
 .status-pill b{color:var(--ink);font-weight:600;}
 .status-pill .fname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;}
+.gh-top{display:inline-flex;align-items:center;justify-content:center;flex:none;width:36px;height:36px;
+  color:var(--ink-dim);border:1px solid var(--line);background:var(--surface);border-radius:50%;transition:.15s var(--ease);}
+.gh-top:hover{color:var(--signal);border-color:var(--signal-line);background:var(--signal-glow);}
+.gh-top:focus-visible{outline:2px solid var(--signal);outline-offset:2px;}
+.gh-top svg{width:18px;height:18px;}
 .linkbtn{
   appearance:none;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-dim);
   font:inherit;font-size:12.5px;padding:7px 13px;border-radius:9px;cursor:pointer;transition:.15s var(--ease);
@@ -198,6 +204,11 @@ body::after{
   .decode-demo{grid-template-columns:1fr;}
   .dd-arrow{transform:rotate(90deg);justify-self:center;}
 }
+/* demo video */
+.demo-video{max-width:780px;margin:34px auto 0;text-align:center;}
+.demo-video .dv-label{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:12px;}
+.demo-video .dv-frame{position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#070c16;box-shadow:0 10px 40px rgba(0,0,0,.35);}
+.demo-video .dv-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
 /* compact loaded bar (replaces hero after load) */
@@ -348,14 +359,6 @@ main.shell{padding-bottom:32px;}
   font-size:.82rem;color:var(--ink-faint);
 }
 .site-footer .copy{letter-spacing:.01em;}
-.site-footer .gh{
-  display:inline-flex;align-items:center;gap:8px;color:var(--ink-dim);text-decoration:none;
-  border:1px solid var(--line);background:var(--surface);padding:6px 13px;border-radius:999px;
-  font-family:var(--font-mono);font-size:.78rem;transition:.15s var(--ease);
-}
-.site-footer .gh:hover{color:var(--signal);border-color:var(--signal-line);background:var(--signal-glow);}
-.site-footer .gh:focus-visible{outline:2px solid var(--signal);outline-offset:2px;}
-.site-footer .gh svg{width:16px;height:16px;}
 
 /* ---------- timeline (rqt_bag style) ---------- */
 #timeline{display:flex;flex-direction:column;}
@@ -439,6 +442,9 @@ main.shell{padding-bottom:32px;}
       <span id="pillMeta"></span>
     </div>
     <button id="resetBtn" class="linkbtn" style="display:none">Load another</button>
+    <a class="gh-top" href="https://github.com/wuisabel-gif" target="_blank" rel="noopener noreferrer" aria-label="GitHub profile" title="View on GitHub">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.6.5.5 5.6.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7 0-.7 0-.7 1.2 0 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.8.1 3.1.8.9 1.2 1.9 1.2 3.2 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5A11.5 11.5 0 0 0 23.5 12C23.5 5.6 18.4.5 12 .5z"/></svg>
+    </a>
   </div>
 </header>
 
@@ -479,6 +485,14 @@ main.shell{padding-bottom:32px;}
         <div class="dd-label">what this tool gives you</div>
         <table class="dd-table" id="ddTable"></table>
         <div class="dd-tag dd-tag-ok">decoded · CSV / JSON</div>
+      </div>
+    </div>
+
+    <!-- demo video -->
+    <div class="demo-video">
+      <div class="dv-label">See it in action</div>
+      <div class="dv-frame">
+        <iframe src="https://www.youtube-nocookie.com/embed/Ah4hHxRI_uk" title="ROS 2 Bag Converter Demo" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
       </div>
     </div>
   </section>
@@ -584,10 +598,6 @@ main.shell{padding-bottom:32px;}
 
 <footer class="site-footer">
   <span class="copy">© 2026 wuisabel · All rights reserved</span>
-  <a class="gh" href="https://github.com/wuisabel" target="_blank" rel="noopener noreferrer" aria-label="GitHub profile">
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.6.5.5 5.6.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7 0-.7 0-.7 1.2 0 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.8.1 3.1.8.9 1.2 1.9 1.2 3.2 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5A11.5 11.5 0 0 0 23.5 12C23.5 5.6 18.4.5 12 .5z"/></svg>
-    <span>wuisabel</span>
-  </a>
 </footer>
 
 <script>

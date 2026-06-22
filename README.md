@@ -2,7 +2,17 @@
 
 Inspect ROS 2 bag (`.db3`) files and export topics to clean **CSV** and **JSON** — entirely in your browser. No ROS 2 installation, no backend, nothing uploaded to a server.
 
+**🔗 Live demo: [wuisabel-gif.github.io/ros2bag_converter](https://wuisabel-gif.github.io/ros2bag_converter/)**
+
 A ROS 2 bag hides your data inside a SQLite `.db3` where every message is a raw, CDR-serialized binary blob. Open it without ROS 2 and you get unreadable bytes — not timestamps, not sensor values. This tool decodes those blobs locally and hands you spreadsheet-ready CSV and JSON.
+
+![ROS 2 Bag Converter](assets/hero.png)
+
+## Demo
+
+[![ROS 2 Bag Converter demo](https://img.youtube.com/vi/Ah4hHxRI_uk/maxresdefault.jpg)](https://youtu.be/Ah4hHxRI_uk)
+
+▶️ **[Watch the demo on YouTube](https://youtu.be/Ah4hHxRI_uk)** — load a bag, inspect topics, and export CSV/JSON.
 
 ## Features
 
@@ -19,7 +29,7 @@ A ROS 2 bag hides your data inside a SQLite `.db3` where every message is a raw,
 
 ## Usage
 
-1. Open the app ([live site](#deployment) or `index.html` locally).
+1. Open the app — the [live site](https://wuisabel-gif.github.io/ros2bag_converter/) or `index.html` locally.
 2. Drag and drop your `.db3` bag onto the page — optionally include `metadata.yaml`.
 3. Review the summary, timeline, and topic list.
 4. Select the topics you want and click **Download CSV** or **Download JSON**.
@@ -44,6 +54,13 @@ The entire app is a single `index.html` (the display font is embedded), so it de
 
 ## Deployment
 
+### GitHub Pages
+
+1. Commit `index.html` to a repository.
+2. Go to **Settings → Pages → Build and deployment**.
+3. Set **Source** to *Deploy from a branch*, pick your branch, folder `/ (root)`.
+4. Your site goes live at `https://<username>.github.io/<repo>/`.
+
 ### Local
 
 Just open `index.html` in a browser, or serve the folder:
@@ -62,4 +79,4 @@ An internet connection is required at runtime to load the WebAssembly SQLite eng
 
 ## License
 
-© 2026 [wuisabel](https://github.com/wuisabel). All rights reserved.
+© 2026 [wuisabel](https://github.com/wuisabel-gif). All rights reserved.
