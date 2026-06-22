@@ -3,19 +3,13 @@
 [![CI](https://github.com/wuisabel-gif/ros2bag_converter/actions/workflows/ci.yml/badge.svg)](https://github.com/wuisabel-gif/ros2bag_converter/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-D22128?logo=apache&logoColor=white)](LICENSE)
 
-Inspect ROS 2 bag (`.db3`) files and export topics to clean **CSV** and **JSON** — entirely in your browser. No ROS 2 installation, no backend, nothing uploaded to a server.
+Inspect ROS 2 bags and export topics to clean **CSV** and **JSON** with no ROS 2 installation. Drag-and-drop `.db3` **in your browser** (nothing uploaded, no backend), or run the **Node / Python CLI** on both `.db3` and `.mcap`.
 
 **🔗 Live demo: [wuisabel-gif.github.io/ros2bag_converter](https://wuisabel-gif.github.io/ros2bag_converter/)**
 
 A ROS 2 bag hides your data inside a SQLite `.db3` where every message is a raw, CDR-serialized binary blob. Open it without ROS 2 and you get unreadable bytes — not timestamps, not sensor values. This tool decodes those blobs locally and hands you spreadsheet-ready CSV and JSON.
 
 ![ROS 2 Bag Converter](assets/hero.png)
-
-## Demo
-
-[![ROS 2 Bag Converter demo](https://img.youtube.com/vi/Ah4hHxRI_uk/maxresdefault.jpg)](https://youtu.be/Ah4hHxRI_uk)
-
-▶️ **[Watch the demo on YouTube](https://youtu.be/Ah4hHxRI_uk)** — load a bag, inspect topics, and export CSV/JSON.
 
 ## Features
 
