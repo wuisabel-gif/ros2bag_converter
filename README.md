@@ -38,6 +38,10 @@ Everything happens client-side. Your bag never leaves your machine.
 
 ## Command-line tools
 
+[![Node.js CLI](https://img.shields.io/badge/Node.js-CLI-339933?logo=nodedotjs&logoColor=white)](cli/node)
+[![Python CLI](https://img.shields.io/badge/Python-CLI-3776AB?logo=python&logoColor=white)](cli/python)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-D22128?logo=apache&logoColor=white)](LICENSE)
+
 Prefer the terminal or need to script exports? The [`cli/`](cli/) folder has matching
 command-line versions — **Node.js** (`npm`) and **Python** (`pip`) — that share the same
 CDR decoder and built-in schemas as this web app:
