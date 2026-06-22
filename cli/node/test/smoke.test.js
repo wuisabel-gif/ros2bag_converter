@@ -9,7 +9,7 @@ const os = require('os');
 const path = require('path');
 const initSqlJs = require('sql.js');
 const { decodeMessage, flatten } = require('../src/decoder');
-const { openBag, eachMessage } = require('../src/bag');
+const { openBag } = require('../src/bag');
 
 /* A tiny little-endian CDR encoder that mirrors the reader's origin-relative
    alignment (origin = 4, after the encapsulation header). */
@@ -81,11 +81,45 @@ const ok = (name) => { passed++; console.log(`  ✓ ${name}`); };
   assert.strictEqual(bag.topics[0].decodable, true);
 
   let got = null;
-  eachMessage(bag.db, 1, (ts, data) => { got = decodeMessage(bag.topics[0].type, data).data; });
+  bag.eachMessage(1, (ts, data) => { got = decodeMessage(bag.topics[0].type, data).data; });
   assert.strictEqual(got, 'from a bag');
-  bag.db.close();
+  bag.close();
   fs.unlinkSync(tmp);
   ok('full pipeline: synthetic .db3 → openBag → decode');
 
+  // 5) MCAP: build a minimal uncompressed .mcap and read it back.
+  const mc = path.join(os.tmpdir(), `ros2bag_smoke_${process.pid}.mcap`);
+  fs.writeFileSync(mc, buildMcap());
+  const mbag = await openBag(mc);
+  assert.strictEqual(mbag.info.storage, 'mcap');
+  assert.strictEqual(mbag.topics.length, 1);
+  assert.strictEqual(mbag.topics[0].name, '/chatter');
+  let mgot = null;
+  mbag.eachMessage(1, (ts, data) => { mgot = decodeMessage(mbag.topics[0].type, data).data; });
+  assert.strictEqual(mgot, 'from an mcap');
+  mbag.close();
+  fs.unlinkSync(mc);
+  ok('full pipeline: synthetic .mcap → openBag → decode');
+
   console.log(`\n${passed} checks passed.`);
 })().catch(e => { console.error('FAILED:', e); process.exit(1); });
+
+// Build a minimal valid uncompressed MCAP with one String message.
+function buildMcap() {
+  const MAGIC = Buffer.from([0x89, 0x4d, 0x43, 0x41, 0x50, 0x30, 0x0d, 0x0a]);
+  const str = s => { const b = Buffer.from(s, 'utf8'); const len = Buffer.alloc(4); len.writeUInt32LE(b.length); return Buffer.concat([len, b]); };
+  const bytesU32 = b => { const len = Buffer.alloc(4); len.writeUInt32LE(b.length); return Buffer.concat([len, b]); };
+  const u16 = v => { const b = Buffer.alloc(2); b.writeUInt16LE(v); return b; };
+  const rec = (op, content) => { const h = Buffer.alloc(9); h.writeUInt8(op, 0); h.writeBigUInt64LE(BigInt(content.length), 1); return Buffer.concat([h, content]); };
+  const parts = [MAGIC];
+  parts.push(rec(0x01, Buffer.concat([str('ros2'), str('smoke')])));                                  // Header
+  parts.push(rec(0x03, Buffer.concat([u16(1), str('std_msgs/msg/String'), str('ros2msg'), bytesU32(Buffer.from('string data\n'))]))); // Schema
+  parts.push(rec(0x04, Buffer.concat([u16(1), u16(1), str('/chatter'), str('cdr'), Buffer.alloc(4)]))); // Channel (empty metadata map)
+  const payload = (() => { const e = new Enc(); e.str('from an mcap'); return Buffer.from(e.bytes()); })();
+  const msg = Buffer.concat([u16(1), Buffer.alloc(4), (() => { const b = Buffer.alloc(8); b.writeBigUInt64LE(1000000000n); return b; })(), Buffer.alloc(8), payload]);
+  parts.push(rec(0x05, msg));                                                                          // Message
+  parts.push(rec(0x0f, Buffer.alloc(4)));                                                              // DataEnd
+  parts.push(rec(0x02, Buffer.alloc(20)));                                                             // Footer
+  parts.push(MAGIC);
+  return Buffer.concat(parts);
+}

@@ -47,7 +47,8 @@ Everything happens client-side. Your bag never leaves your machine.
 
 Prefer the terminal or need to script exports? The [`cli/`](cli/) folder has matching
 command-line versions — **Node.js** (`npm`) and **Python** (`pip`) — that share the same
-CDR decoder and built-in schemas as this web app:
+CDR decoder and built-in schemas as this web app, and additionally read **`.mcap`** bags
+(ROS 2's current default recorder), not just SQLite `.db3`:
 
 ```bash
 ros2bag-convert info my_bag.db3                  # summary, like `ros2 bag info`

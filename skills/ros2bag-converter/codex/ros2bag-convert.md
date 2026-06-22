@@ -1,6 +1,7 @@
-Decode and export the user's ROS 2 rosbag2 `.db3` bag using the bundled
-converter. It is a single standard-library Python 3 script — no ROS 2, no
-`pip install`, no third-party dependencies.
+Decode and export the user's ROS 2 rosbag2 bag (SQLite `.db3` or MCAP `.mcap`,
+auto-detected) using the bundled converter. It is a single standard-library
+Python 3 script — no ROS 2, no `pip install`, no third-party dependencies.
+(MCAP zstd/lz4 chunk compression needs the optional zstandard/lz4 packages.)
 
 Script path (set at install time):
 

@@ -1,8 +1,8 @@
 # Agent skills
 
 Package the ROS 2 bag converter as an **agent skill** so Claude Code or Codex CLI
-can inspect and export `.db3` rosbag2 files on request. The engine is a single
-standard-library Python script — no ROS 2, no `pip install`.
+can inspect and export rosbag2 files (`.db3` and `.mcap`) on request. The engine is
+a single standard-library Python script — no ROS 2, no `pip install`.
 
 ```
 ros2bag-converter/

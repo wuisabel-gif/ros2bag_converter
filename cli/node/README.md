@@ -1,8 +1,10 @@
 # ros2bag-convert (Node.js)
 
-Inspect ROS 2 `.db3` bags and export topics to CSV / JSON from the terminal.
-Same decoder as the [web app](https://wuisabel-gif.github.io/ros2bag_converter/).
-Reads SQLite via [`sql.js`](https://sql.js.org/) (pure WebAssembly — no native build step).
+Inspect ROS 2 `.db3` **and `.mcap`** bags and export topics to CSV / JSON from the
+terminal (format auto-detected). Same decoder as the
+[web app](https://wuisabel-gif.github.io/ros2bag_converter/). Reads SQLite via
+[`sql.js`](https://sql.js.org/) (pure WebAssembly — no native build step); MCAP via a
+built-in parser (uncompressed/zstd; zstd needs Node ≥ 22.15).
 
 ## Install
 

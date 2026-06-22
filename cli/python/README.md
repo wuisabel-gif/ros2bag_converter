@@ -1,8 +1,10 @@
 # ros2bag-convert (Python)
 
-Inspect ROS 2 `.db3` bags and export topics to CSV / JSON from the terminal.
-Same decoder as the [web app](https://wuisabel-gif.github.io/ros2bag_converter/).
-**Standard library only** — no third-party dependencies, no ROS 2 install.
+Inspect ROS 2 `.db3` **and `.mcap`** bags and export topics to CSV / JSON from the
+terminal (format auto-detected). Same decoder as the
+[web app](https://wuisabel-gif.github.io/ros2bag_converter/).
+**Standard library only** — no third-party dependencies, no ROS 2 install. (MCAP with
+zstd/lz4 chunk compression needs the optional `zstandard`/`lz4` packages.)
 
 ## Install
 

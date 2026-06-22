@@ -1,8 +1,9 @@
 # ros2bag-convert — command-line tools
 
 Terminal versions of the [ROS 2 Bag Converter](https://wuisabel-gif.github.io/ros2bag_converter/)
-web app. Inspect ROS 2 `.db3` bags and export topics to **CSV** / **JSON** without a
-ROS 2 install — same CDR decoder and built-in schemas as the browser tool.
+web app. Inspect ROS 2 `.db3` **and `.mcap`** bags and export topics to **CSV** / **JSON**
+without a ROS 2 install — same CDR decoder and built-in schemas as the browser tool. The
+format is auto-detected from the file's magic bytes.
 
 Two implementations, identical CLI:
 
@@ -38,8 +39,12 @@ Data is written to **stdout** (use `-o` for a file); the one-line status note go
   it adds a `topic` column and unions the columns across topics.
 - **Large binary arrays** (point-cloud / image `data`) are summarized, not dumped — same caps
   as the web app (1024 bytes / 8192 primitives).
-- **Custom message types** are decoded automatically when the bag embeds a
-  `message_definitions` table (ROS 2 Iron and newer); otherwise the built-in schemas apply.
+- **Both storage formats** are supported: SQLite `.db3` and `.mcap` (ROS 2's current
+  default recorder). MCAP with `zstd`/`lz4` chunk compression needs the optional
+  `zstandard`/`lz4` Python packages (Node uses its built-in zstd, Node ≥ 22.15).
+- **Custom message types** are decoded automatically when the bag embeds message
+  definitions (the `message_definitions` table in `.db3`, or Schema records in `.mcap`;
+  ROS 2 Iron and newer); otherwise the built-in schemas apply.
 - **Undecodable / unknown** messages export as raw byte-length placeholders instead of failing.
 - The Node output is byte-for-byte identical to the web app. The Python output is semantically
   identical; numeric formatting can differ slightly (e.g. `2.0` vs `2`).

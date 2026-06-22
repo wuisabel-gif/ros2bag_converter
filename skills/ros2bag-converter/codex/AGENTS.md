@@ -1,10 +1,11 @@
 # ROS 2 bag converter (for Codex / AGENTS.md-aware agents)
 
 This project bundles a standard-library Python tool to inspect and export ROS 2
-`rosbag2` `.db3` (SQLite) bags to CSV / JSON without a ROS 2 install.
+`rosbag2` bags — SQLite `.db3` and MCAP `.mcap` (auto-detected) — to CSV / JSON
+without a ROS 2 install.
 
 When the user asks to inspect, summarize, list topics from, or convert/export a
-`.db3` / `rosbag2` file, use:
+`.db3` / `.mcap` / `rosbag2` file, use:
 
     python3 skills/ros2bag-converter/scripts/ros2bag_convert.py <command> <bag.db3> [options]
 

@@ -1,18 +1,21 @@
 ---
 name: ros2bag-converter
-description: Inspect ROS 2 rosbag2 .db3 (SQLite) bag files and export their topics to CSV or JSON without a ROS 2 installation. Use when the user has a .db3 / rosbag2 file and wants a summary (topics, message counts, duration, start/end time), wants to list topics, or wants to convert/export messages to CSV or JSON. Decodes CDR-serialized messages including common sensor_msgs, geometry_msgs, nav_msgs, tf2_msgs and std_msgs types, plus custom message types embedded in the bag.
+description: Inspect ROS 2 rosbag2 bag files (SQLite .db3 and MCAP .mcap) and export their topics to CSV or JSON without a ROS 2 installation. Use when the user has a .db3, .mcap, or rosbag2 file and wants a summary (topics, message counts, duration, start/end time), wants to list topics, or wants to convert/export messages to CSV or JSON. Decodes CDR-serialized messages including common sensor_msgs, geometry_msgs, nav_msgs, tf2_msgs and std_msgs types, plus custom message types embedded in the bag.
 ---
 
 # ROS 2 Bag Converter
 
-Decode and export ROS 2 `rosbag2` SQLite bags (`.db3`) without ROS 2 installed.
-The engine is a single self-contained Python script (standard library only —
-no `pip install`, no ROS) at `scripts/ros2bag_convert.py` relative to this skill.
+Decode and export ROS 2 `rosbag2` bags — both SQLite (`.db3`) and MCAP (`.mcap`,
+ROS 2's current default recorder) — without ROS 2 installed. The format is
+auto-detected. The engine is a single self-contained Python script (standard
+library only — no `pip install`, no ROS) at `scripts/ros2bag_convert.py` relative
+to this skill. (MCAP zstd/lz4 chunk compression needs the optional
+`zstandard`/`lz4` packages.)
 
 ## When to use
 
-Trigger when the user references a `.db3`, `rosbag`, `rosbag2` file, or a folder
-containing one alongside a `metadata.yaml`, and wants to:
+Trigger when the user references a `.db3`, `.mcap`, `rosbag`, `rosbag2` file, or a
+folder containing one alongside a `metadata.yaml`, and wants to:
 - see a **summary** (topics, types, counts, duration) — like `ros2 bag info`;
 - **list** topics; or
 - **export** messages to **CSV** or **JSON**.
@@ -20,9 +23,9 @@ containing one alongside a `metadata.yaml`, and wants to:
 ## Instructions
 
 ### Step 1 — Locate the bag
-Find the `.db3` file. A rosbag2 recording is usually a folder containing
-`<name>_0.db3` and `metadata.yaml`. Use the `.db3` path. Pass `metadata.yaml`
-with `-m` when present (adds storage/distro info to the summary).
+Find the bag file. A rosbag2 recording is usually a folder containing
+`<name>_0.db3` **or** `<name>_0.mcap`, plus `metadata.yaml`. Use the `.db3`/`.mcap`
+path (the format is auto-detected). Pass `metadata.yaml` with `-m` when present.
 
 ### Step 2 — Inspect first
 Run the summary so you (and the user) understand the bag before exporting:

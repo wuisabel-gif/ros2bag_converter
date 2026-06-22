@@ -9,7 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { openBag, eachMessage } = require('../src/bag');
+const { openBag } = require('../src/bag');
 const { decodeMessage, flatten, csvCell } = require('../src/decoder');
 
 const HELP = `ros2bag-convert — inspect & export ROS 2 .db3 bags (CSV / JSON)
@@ -106,7 +106,7 @@ function cmdConvert(bag, opts) {
     out.write('[');
     let first = true;
     for (const t of sel) {
-      const res = eachMessage(bag.db, t.id, (ts, data) => {
+      const res = bag.eachMessage(t.id, (ts, data) => {
         let decoded;
         try { decoded = t.decodable ? decodeMessage(t.type, data) : { __raw_bytes__: data.length }; }
         catch (e) { decoded = { __decode_error__: e.message, __raw_bytes__: data.length }; errs++; }
@@ -123,7 +123,7 @@ function cmdConvert(bag, opts) {
     const colOrder = new Map();
     const all = [];
     for (const t of sel) {
-      const res = eachMessage(bag.db, t.id, (ts, data) => {
+      const res = bag.eachMessage(t.id, (ts, data) => {
         const f = {};
         if (t.decodable) { try { flatten(decodeMessage(t.type, data), '', f); } catch (e) { f.decode_error = e.message; errs++; } }
         else f.raw_bytes = data.length;
@@ -164,7 +164,7 @@ async function main() {
   if (command === 'info') cmdInfo(bag);
   else if (command === 'list') cmdList(bag);
   else cmdConvert(bag, opts);
-  bag.db.close();
+  bag.close();
 }
 
 main().catch(e => { process.stderr.write(`ros2bag-convert: ${e.message}\n`); process.exit(1); });

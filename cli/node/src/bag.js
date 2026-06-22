@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
 'use strict';
 /* ============================================================================
-   rosbag2 SQLite (.db3) reader — built on sql.js (pure-WASM SQLite, no native
-   build step). Mirrors how index.html reads the bag in the browser.
+   rosbag2 reader — dispatches on container format:
+     • SQLite .db3  (via sql.js, pure WASM)
+     • MCAP  .mcap  (via ./mcap)
+   Both openers return a uniform Bag object:
+     { topics, info, eachMessage(topicId, cb, maxRows) -> {count,truncated}, close() }
    ========================================================================== */
 
 const fs = require('fs');
 const initSqlJs = require('sql.js');
 const { norm, registerEncodedDefinition, registry } = require('./decoder');
+
+const MCAP_MAGIC = Buffer.from([0x89, 0x4d, 0x43, 0x41, 0x50, 0x30, 0x0d, 0x0a]);
 
 let SQL = null;
 async function ensureSQL() {
@@ -20,12 +25,19 @@ function tableExists(db, name) {
   return r.length > 0 && r[0].values.length > 0;
 }
 
-/**
- * Open a .db3 bag. Returns { db, topics, info }.
- * `topics` is [{ id, name, type, fmt, cnt, tmin, tmax, decodable }].
- * Registers any custom message_definitions found in the bag (Iron+).
- */
-async function openBag(db3Path, metadataPath) {
+/** Open a rosbag2 bag, dispatching on the file's magic bytes. */
+async function openBag(path, metadataPath) {
+  if (!fs.existsSync(path)) throw new Error(`file not found: ${path}`);
+  const head = Buffer.alloc(8);
+  const fd = fs.openSync(path, 'r');
+  try { fs.readSync(fd, head, 0, 8, 0); } finally { fs.closeSync(fd); }
+  if (head.equals(MCAP_MAGIC)) {
+    return require('./mcap').openMcap(path, metadataPath);
+  }
+  return openSqliteBag(path, metadataPath);
+}
+
+async function openSqliteBag(db3Path, metadataPath) {
   await ensureSQL();
   const bytes = new Uint8Array(fs.readFileSync(db3Path));
   let db;
@@ -38,16 +50,15 @@ async function openBag(db3Path, metadataPath) {
     throw new Error('Not a rosbag2 SQLite bag — missing the "topics" / "messages" tables.');
   }
 
-  // Custom message definitions embedded in the bag (ROS 2 Iron and newer).
   if (tableExists(db, 'message_definitions')) {
     try {
       const r = db.exec('SELECT topic_type, encoding, encoded_message_definition FROM message_definitions');
       if (r.length) for (const [tt, enc, def] of r[0].values) {
         if (def && (enc === 'ros2msg' || enc == null)) {
-          try { registerEncodedDefinition(norm(tt), def); } catch (e) { /* ignore one bad def */ }
+          try { registerEncodedDefinition(norm(tt), def); } catch (e) { /* one bad def */ }
         }
       }
-    } catch (e) { /* table present but unreadable — fall back to built-ins */ }
+    } catch (e) { /* unreadable — fall back to built-ins */ }
   }
 
   const rows = db.exec(`SELECT t.id, t.name, t.type, COALESCE(t.serialization_format,'cdr') fmt,
@@ -70,22 +81,24 @@ async function openBag(db3Path, metadataPath) {
     const dm = metaText.match(/ros_distro:\s*(\S+)/); if (dm) distro = dm[1];
   }
 
-  return { db, topics, info: { total, gMin, gMax, storage, distro } };
+  return {
+    topics,
+    info: { total, gMin, gMax, storage, distro },
+    eachMessage(topicId, cb, maxRows) {
+      const stmt = db.prepare('SELECT CAST(timestamp AS TEXT) ts, data FROM messages WHERE topic_id=$id ORDER BY timestamp');
+      stmt.bind({ $id: topicId });
+      let n = 0, truncated = false;
+      while (stmt.step()) {
+        if (maxRows != null && n >= maxRows) { truncated = true; break; }
+        const r = stmt.getAsObject();
+        cb(r.ts, r.data);
+        n++;
+      }
+      stmt.free();
+      return { count: n, truncated };
+    },
+    close() { try { db.close(); } catch (e) { /* ignore */ } },
+  };
 }
 
-/** Iterate messages of a topic in timestamp order: yields { ts (BigInt-safe string), data (Uint8Array) }. */
-function eachMessage(db, topicId, cb, maxRows) {
-  const stmt = db.prepare('SELECT CAST(timestamp AS TEXT) ts, data FROM messages WHERE topic_id=$id ORDER BY timestamp');
-  stmt.bind({ $id: topicId });
-  let n = 0, truncated = false;
-  while (stmt.step()) {
-    if (maxRows != null && n >= maxRows) { truncated = true; break; }
-    const r = stmt.getAsObject();
-    cb(r.ts, r.data);
-    n++;
-  }
-  stmt.free();
-  return { count: n, truncated };
-}
-
-module.exports = { openBag, eachMessage };
+module.exports = { openBag };
