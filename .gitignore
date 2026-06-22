@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Demo video — large binary; the demo lives on YouTube (see README)
+ros2bagconverter.demo.mp4
+*.mp4
+
+# Node
+node_modules/
+*.tgz
+
+# Python
+__pycache__/
+*.egg-info/
+build/
+dist/
+.eggs/
