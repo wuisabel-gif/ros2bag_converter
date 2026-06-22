@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 'use strict';
 /* Minimal smoke test: encode known CDR blobs, build a synthetic rosbag2 .db3,
    and exercise decode + bag reading end to end. Run: `node test/smoke.test.js`. */

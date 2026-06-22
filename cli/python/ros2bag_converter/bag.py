@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """rosbag2 SQLite (.db3) reader, built on the standard-library sqlite3 module.
 
 Streams messages with a cursor rather than loading the whole DB into memory.

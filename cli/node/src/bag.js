@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 'use strict';
 /* ============================================================================
    rosbag2 SQLite (.db3) reader — built on sql.js (pure-WASM SQLite, no native

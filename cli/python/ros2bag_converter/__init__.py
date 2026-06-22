@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """ros2bag_converter — decode ROS 2 .db3 bags and export to CSV / JSON.
 
 Public API:

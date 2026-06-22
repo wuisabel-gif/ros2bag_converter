@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 'use strict';
 /* ============================================================================
    ROS 2 message schema registry + .msg parser + CDR deserializer.

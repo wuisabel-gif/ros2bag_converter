@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """ROS 2 message schema registry + .msg parser + CDR deserializer.
 
 Faithful port of the decoder that powers the browser app (index.html) and the

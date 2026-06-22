@@ -93,4 +93,6 @@ An internet connection is required at runtime to load the WebAssembly SQLite eng
 
 ## License
 
-© 2026 [wuisabel](https://github.com/wuisabel-gif). All rights reserved.
+Licensed under the [Apache License 2.0](LICENSE).
+
+© 2026 [Isabel Wu](https://github.com/wuisabel-gif)

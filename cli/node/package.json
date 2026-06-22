@@ -5,7 +5,7 @@
   "keywords": ["ros2", "rosbag", "rosbag2", "db3", "cdr", "csv", "json", "robotics", "cli"],
   "homepage": "https://github.com/wuisabel-gif/ros2bag_converter",
   "repository": { "type": "git", "url": "https://github.com/wuisabel-gif/ros2bag_converter.git", "directory": "cli/node" },
-  "license": "SEE LICENSE IN ../../LICENSE",
+  "license": "Apache-2.0",
   "author": "Isabel Wu",
   "bin": { "ros2bag-convert": "bin/ros2bag-convert.js" },
   "main": "src/decoder.js",
