@@ -36,6 +36,20 @@ A ROS 2 bag hides your data inside a SQLite `.db3` where every message is a raw,
 
 Everything happens client-side. Your bag never leaves your machine.
 
+## Command-line tools
+
+Prefer the terminal or need to script exports? The [`cli/`](cli/) folder has matching
+command-line versions — **Node.js** (`npm`) and **Python** (`pip`) — that share the same
+CDR decoder and built-in schemas as this web app:
+
+```bash
+ros2bag-convert info my_bag.db3                  # summary, like `ros2 bag info`
+ros2bag-convert my_bag.db3 -f csv -t /odom -o odom.csv
+ros2bag-convert my_bag.db3 -f json > all_topics.json
+```
+
+See [`cli/README.md`](cli/README.md) for install and usage.
+
 ## Supported message types
 
 Built-in schemas decode the common ROS 2 messages out of the box:

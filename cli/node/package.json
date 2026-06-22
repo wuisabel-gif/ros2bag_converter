@@ -1,0 +1,24 @@
+{
+  "name": "ros2bag-convert",
+  "version": "0.1.0",
+  "description": "Inspect ROS 2 .db3 bags and export topics to CSV / JSON from the command line — no ROS 2 install required.",
+  "keywords": ["ros2", "rosbag", "rosbag2", "db3", "cdr", "csv", "json", "robotics", "cli"],
+  "homepage": "https://github.com/wuisabel-gif/ros2bag_converter",
+  "repository": { "type": "git", "url": "https://github.com/wuisabel-gif/ros2bag_converter.git", "directory": "cli/node" },
+  "license": "SEE LICENSE IN ../../LICENSE",
+  "author": "Isabel Wu",
+  "bin": { "ros2bag-convert": "bin/ros2bag-convert.js" },
+  "main": "src/decoder.js",
+  "exports": {
+    ".": "./src/decoder.js",
+    "./bag": "./src/bag.js"
+  },
+  "files": ["bin", "src", "README.md"],
+  "engines": { "node": ">=16" },
+  "dependencies": {
+    "sql.js": "^1.10.3"
+  },
+  "scripts": {
+    "test": "node test/smoke.test.js"
+  }
+}

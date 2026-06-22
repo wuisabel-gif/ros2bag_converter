@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ros2bag-convert"
+version = "0.1.0"
+description = "Inspect ROS 2 .db3 bags and export topics to CSV / JSON — no ROS 2 install required."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "SEE LICENSE IN ../../LICENSE" }
+authors = [{ name = "Isabel Wu" }]
+keywords = ["ros2", "rosbag", "rosbag2", "db3", "cdr", "csv", "json", "robotics", "cli"]
+classifiers = [
+    "Environment :: Console",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = []  # standard library only
+
+[project.urls]
+Homepage = "https://github.com/wuisabel-gif/ros2bag_converter"
+Repository = "https://github.com/wuisabel-gif/ros2bag_converter"
+
+[project.scripts]
+ros2bag-convert = "ros2bag_converter.cli:main"
+
+[tool.setuptools]
+packages = ["ros2bag_converter"]
