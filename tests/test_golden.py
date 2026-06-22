@@ -51,11 +51,26 @@ def main():
             else:
                 failures.append(name)
                 print(f"  ✗ {name}  (output differs from golden)")
+
+        # Cross-format: MCAP must decode to the same output as .db3, except the
+        # storage line in `info` (sqlite3 vs mcap).
+        mcap = sample_bag.build_mcap(os.path.join(d, "sample.mcap"))
+        for name, args in CASES.items():
+            db3_out, mcap_out = run_cli(bag, *args), run_cli(mcap, *args)
+            if name == "info.txt":
+                db3_out = db3_out.replace("sqlite3", "")
+                mcap_out = mcap_out.replace("mcap", "")
+            if db3_out == mcap_out:
+                print(f"  ✓ mcap==db3: {name}")
+            else:
+                failures.append(f"mcap=={name}")
+                print(f"  ✗ mcap==db3: {name}  (MCAP output differs from .db3)")
+
         if failures:
-            print(f"\nFAILED: {len(failures)} golden mismatch(es): {', '.join(failures)}")
+            print(f"\nFAILED: {len(failures)} mismatch(es): {', '.join(failures)}")
             print("If the change is intentional, regenerate tests/golden/ and review the diff.")
             return 1
-        print(f"\n{len(CASES)} golden checks passed.")
+        print(f"\n{len(CASES) * 2} checks passed (golden + cross-format).")
         return 0
 
 

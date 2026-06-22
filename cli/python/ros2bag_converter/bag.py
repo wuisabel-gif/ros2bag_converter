@@ -62,9 +62,15 @@ def _table_exists(conn, name) -> bool:
     return r is not None
 
 
-def open_bag(db3_path: str, metadata_path: str | None = None) -> Bag:
+def open_bag(db3_path: str, metadata_path: str | None = None):
+    """Open a rosbag2 bag, dispatching on container format (SQLite .db3 or MCAP)."""
     if not os.path.exists(db3_path):
         raise FileNotFoundError(f"file not found: {db3_path}")
+    with open(db3_path, "rb") as fh:
+        magic = fh.read(8)
+    if magic == b"\x89MCAP0\r\n":
+        from . import mcap
+        return mcap.open_mcap(db3_path, metadata_path)
     try:
         conn = sqlite3.connect(f"file:{db3_path}?mode=ro", uri=True)
         # Force a read so we fail early on a non-SQLite file.

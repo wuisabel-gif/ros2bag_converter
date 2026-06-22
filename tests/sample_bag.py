@@ -140,7 +140,69 @@ def build(path: str) -> str:
     return path
 
 
+MCAP_MAGIC = b"\x89MCAP0\r\n"
+
+
+def _mc_str(s):
+    e = s.encode("utf-8")
+    return struct.pack("<I", len(e)) + e
+
+
+def _mc_bytes(b):
+    return struct.pack("<I", len(b)) + b
+
+
+def _mc_record(op, content):
+    return bytes([op]) + struct.pack("<Q", len(content)) + content
+
+
+def build_mcap(path: str) -> str:
+    """Create a deterministic uncompressed MCAP fixture with the SAME messages
+    as build(), so the two containers can be cross-checked. Returns the path."""
+    if os.path.exists(path):
+        os.remove(path)
+    parts = [MCAP_MAGIC]
+    parts.append(_mc_record(0x01, _mc_str("ros2") + _mc_str("ros2bag_converter-test")))  # Header
+
+    # Schemas. Empty data => reader falls back to built-in schema; non-empty
+    # exercises the embedded-definition path (self-contained String + custom Widget).
+    schemas = [
+        (1, "std_msgs/msg/String", "string data\n"),
+        (2, "sensor_msgs/msg/Imu", ""),
+        (3, "tf2_msgs/msg/TFMessage", ""),
+        (4, "my_pkg/msg/Widget", WIDGET_DEF),
+    ]
+    for sid, name, data in schemas:
+        c = struct.pack("<H", sid) + _mc_str(name) + _mc_str("ros2msg") + _mc_bytes(data.encode("utf-8"))
+        parts.append(_mc_record(0x03, c))
+
+    channels = [(1, 1, "/chatter"), (2, 2, "/imu"), (3, 3, "/tf"), (4, 4, "/widget")]
+    for cid, sid, topic in channels:
+        c = struct.pack("<HH", cid, sid) + _mc_str(topic) + _mc_str("cdr") + struct.pack("<I", 0)
+        parts.append(_mc_record(0x04, c))
+
+    msgs = [
+        (1, 1_000_000_000, _string_msg("hello")),
+        (1, 1_500_000_000, _string_msg("world")),
+        (2, 1_100_000_000, _imu_msg(1, 100_000_000)),
+        (3, 1_200_000_000, _tf_msg(1, 200_000_000)),
+        (4, 1_300_000_000, _widget_msg(3.14, 7, "alpha")),
+        (4, 1_800_000_000, _widget_msg(-2.5, 0, "beta")),
+    ]
+    for seq, (cid, ts, blob) in enumerate(msgs):
+        c = struct.pack("<HIQQ", cid, seq, ts, ts) + blob
+        parts.append(_mc_record(0x05, c))
+
+    parts.append(_mc_record(0x0F, struct.pack("<I", 0)))      # DataEnd
+    parts.append(_mc_record(0x02, struct.pack("<QQI", 0, 0, 0)))  # Footer
+    parts.append(MCAP_MAGIC)
+    with open(path, "wb") as fh:
+        fh.write(b"".join(parts))
+    return path
+
+
 if __name__ == "__main__":
     import sys
     out = sys.argv[1] if len(sys.argv) > 1 else "sample.db3"
-    print("wrote", build(out))
+    builder = build_mcap if out.endswith(".mcap") else build
+    print("wrote", builder(out))

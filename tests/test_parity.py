@@ -46,21 +46,25 @@ INVOCATIONS = [
 
 def main():
     with tempfile.TemporaryDirectory() as d:
-        bag = sample_bag.build(os.path.join(d, "sample.db3"))
+        bags = {
+            "db3": sample_bag.build(os.path.join(d, "sample.db3")),
+            "mcap": sample_bag.build_mcap(os.path.join(d, "sample.mcap")),
+        }
         failures = []
-        for args in INVOCATIONS:
-            label = " ".join(args)
-            pkg, skill = run_pkg(bag, *args), run_skill(bag, *args)
-            if pkg == skill:
-                print(f"  ✓ parity: {label}")
-            else:
-                failures.append(label)
-                print(f"  ✗ parity: {label}  (skill engine != cli/python)")
+        for kind, bag in bags.items():
+            for args in INVOCATIONS:
+                label = f"{kind}: {' '.join(args)}"
+                pkg, skill = run_pkg(bag, *args), run_skill(bag, *args)
+                if pkg == skill:
+                    print(f"  ✓ parity: {label}")
+                else:
+                    failures.append(label)
+                    print(f"  ✗ parity: {label}  (skill engine != cli/python)")
         if failures:
             print("\nFAILED: skill engine has drifted from cli/python.")
             print("Re-sync skills/ros2bag-converter/scripts/ros2bag_convert.py with cli/python.")
             return 1
-        print(f"\n{len(INVOCATIONS)} parity checks passed.")
+        print(f"\n{len(INVOCATIONS) * len(bags)} parity checks passed.")
         return 0
 
 

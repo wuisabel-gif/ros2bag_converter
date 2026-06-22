@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""ros2bag_convert — self-contained ROS 2 .db3 bag inspector / exporter.
+"""ros2bag_convert — self-contained ROS 2 rosbag2 inspector / exporter.
 
 Single-file, standard-library-only build of the `ros2bag_converter` package
 (see cli/python in https://github.com/wuisabel-gif/ros2bag_converter). Decodes
-CDR-serialized rosbag2 messages and exports topics to CSV / JSON — no ROS 2
-install, no third-party dependencies.
+CDR-serialized rosbag2 messages from SQLite (.db3) AND MCAP (.mcap) bags and
+exports topics to CSV / JSON — no ROS 2 install, no third-party dependencies.
+(MCAP zstd/lz4 chunk compression needs the optional zstandard/lz4 packages.)
 
 Usage:
-    python3 ros2bag_convert.py <bag.db3> [options]   # export (default)
-    python3 ros2bag_convert.py info <bag.db3>         # summary
-    python3 ros2bag_convert.py list <bag.db3>         # topics + counts
+    python3 ros2bag_convert.py <bag> [options]   # export (default)  (.db3 or .mcap)
+    python3 ros2bag_convert.py info <bag>         # summary
+    python3 ros2bag_convert.py list <bag>         # topics + counts
 
 Options:
     -f, --format {csv,json}   output format (default: csv)
@@ -23,6 +24,7 @@ Options:
 
 from __future__ import annotations
 
+import io
 import json
 import os
 import re
@@ -346,9 +348,13 @@ def _table_exists(conn, name) -> bool:
     return r is not None
 
 
-def open_bag(db3_path: str, metadata_path: "str | None" = None) -> Bag:
+def open_bag(db3_path: str, metadata_path: "str | None" = None):
+    """Open a rosbag2 bag, dispatching on container format (SQLite .db3 or MCAP)."""
     if not os.path.exists(db3_path):
         raise FileNotFoundError(f"file not found: {db3_path}")
+    with open(db3_path, "rb") as fh:
+        if fh.read(8) == MCAP_MAGIC:
+            return open_mcap(db3_path, metadata_path)
     try:
         conn = sqlite3.connect(f"file:{db3_path}?mode=ro", uri=True)
         conn.execute("SELECT name FROM sqlite_master LIMIT 1")
@@ -394,6 +400,144 @@ def open_bag(db3_path: str, metadata_path: "str | None" = None) -> Bag:
         sm = re.search(r"storage_identifier:\s*(\S+)", meta)
         if sm:
             bag.storage = sm.group(1)
+        dm = re.search(r"ros_distro:\s*(\S+)", meta)
+        if dm:
+            bag.distro = dm.group(1)
+    return bag
+
+
+# ===========================================================================
+# MCAP (.mcap) reader — ROS 2's current default rosbag2 format
+# ===========================================================================
+MCAP_MAGIC = b"\x89MCAP0\r\n"
+_MC_FOOTER, _MC_SCHEMA, _MC_CHANNEL, _MC_MESSAGE, _MC_CHUNK = 0x02, 0x03, 0x04, 0x05, 0x06
+
+
+class _McReader:
+    __slots__ = ("b", "o")
+
+    def __init__(self, buf, off=0):
+        self.b = buf; self.o = off
+
+    def u16(self): v = struct.unpack_from("<H", self.b, self.o)[0]; self.o += 2; return v
+    def u32(self): v = struct.unpack_from("<I", self.b, self.o)[0]; self.o += 4; return v
+    def u64(self): v = struct.unpack_from("<Q", self.b, self.o)[0]; self.o += 8; return v
+
+    def s(self):
+        n = self.u32(); v = self.b[self.o:self.o + n].decode("utf-8", "replace"); self.o += n; return v
+
+    def bytes_u32(self):
+        n = self.u32(); v = self.b[self.o:self.o + n]; self.o += n; return v
+
+
+def _mc_iter(buf, start, end):
+    o = start
+    while o + 9 <= end:
+        op = buf[o]
+        ln = struct.unpack_from("<Q", buf, o + 1)[0]
+        cstart = o + 9
+        content = buf[cstart:cstart + ln]
+        o = cstart + ln
+        yield op, content
+        if op == _MC_FOOTER:
+            break
+
+
+def _mc_decompress(comp, data, usize):
+    if not comp:
+        return data
+    if comp == "zstd":
+        try:
+            import zstandard
+        except ImportError:
+            raise RuntimeError("MCAP chunk uses zstd compression; install 'zstandard' (pip install zstandard).")
+        return zstandard.ZstdDecompressor().stream_reader(io.BytesIO(data)).read()
+    if comp == "lz4":
+        try:
+            import lz4.frame as lz4frame
+        except ImportError:
+            raise RuntimeError("MCAP chunk uses lz4 compression; install 'lz4' (pip install lz4).")
+        return lz4frame.decompress(data)
+    raise RuntimeError(f"unsupported MCAP chunk compression: {comp!r}")
+
+
+class McapBag:
+    def __init__(self):
+        self.topics = []
+        self.total = 0
+        self.gmin = None
+        self.gmax = None
+        self.storage = "mcap"
+        self.distro = ""
+        self._msgs = {}
+        self._truncated = False
+
+    def each_message(self, topic_id, max_rows=None):
+        data = sorted(self._msgs.get(topic_id, []), key=lambda x: x[0])
+        self._truncated = False
+        for i, (log_time, blob) in enumerate(data):
+            if max_rows is not None and i >= max_rows:
+                self._truncated = True
+                break
+            yield log_time, blob
+
+    def close(self):
+        pass
+
+
+def open_mcap(path: str, metadata_path: "str | None" = None) -> McapBag:
+    with open(path, "rb") as fh:
+        buf = fh.read()
+    if buf[:8] != MCAP_MAGIC:
+        raise ValueError("Not an MCAP file — bad magic bytes.")
+    schemas = {}
+    channels = {}
+    bag = McapBag()
+
+    def handle(op, content):
+        r = _McReader(content)
+        if op == _MC_SCHEMA:
+            sid = r.u16(); name = r.s(); enc = r.s(); data = r.bytes_u32()
+            schemas[sid] = name
+            if enc == "ros2msg" and data:
+                try:
+                    register_encoded_definition(norm(name), data.decode("utf-8", "replace"))
+                except Exception:
+                    pass
+        elif op == _MC_CHANNEL:
+            cid = r.u16(); schema_id = r.u16(); topic = r.s(); msg_enc = r.s()
+            channels[cid] = (topic, schema_id, msg_enc)
+            bag._msgs.setdefault(cid, [])
+        elif op == _MC_MESSAGE:
+            cid = r.u16(); r.u32(); log_time = r.u64(); r.u64()
+            bag._msgs.setdefault(cid, []).append((log_time, content[r.o:]))
+        elif op == _MC_CHUNK:
+            r.u64(); r.u64(); usize = r.u64(); r.u32(); comp = r.s()
+            n = r.u64()
+            records = r.b[r.o:r.o + n]
+            raw = _mc_decompress(comp, records, usize)
+            for iop, icontent in _mc_iter(raw, 0, len(raw)):
+                handle(iop, icontent)
+
+    for op, content in _mc_iter(buf, 8, len(buf)):
+        handle(op, content)
+
+    for cid in sorted(channels, key=lambda c: channels[c][0]):
+        topic, schema_id, msg_enc = channels[cid]
+        type_ = schemas.get(schema_id) or "(unknown)"
+        mlist = bag._msgs.get(cid, [])
+        cnt = len(mlist)
+        tmin = min((t for t, _ in mlist), default=None)
+        tmax = max((t for t, _ in mlist), default=None)
+        bag.topics.append(Topic(cid, topic, type_, msg_enc or "cdr", cnt, tmin, tmax, is_decodable(type_)))
+        bag.total += cnt
+        if cnt > 0:
+            bag.gmin = tmin if bag.gmin is None else min(bag.gmin, tmin)
+            bag.gmax = tmax if bag.gmax is None else max(bag.gmax, tmax)
+
+    if metadata_path and os.path.exists(metadata_path):
+        with open(metadata_path, "r", encoding="utf-8", errors="replace") as fh:
+            meta = fh.read()
         dm = re.search(r"ros_distro:\s*(\S+)", meta)
         if dm:
             bag.distro = dm.group(1)
