@@ -373,6 +373,9 @@ main.shell{padding-bottom:32px;}
   font-size:.82rem;color:var(--ink-faint);
 }
 .site-footer .copy{letter-spacing:.01em;}
+.site-footer .foot-links{letter-spacing:.02em;color:var(--ink-faint);}
+.site-footer .foot-links a{color:var(--ink-dim);text-decoration:none;}
+.site-footer .foot-links a:hover{color:var(--signal);text-decoration:underline;}
 
 /* ---------- timeline (rqt_bag style) ---------- */
 #timeline{display:flex;flex-direction:column;}
@@ -634,6 +637,13 @@ main.shell{padding-bottom:32px;}
 </main>
 
 <footer class="site-footer">
+  <span class="foot-links">
+    Also available as
+    <a href="https://github.com/wuisabel-gif/ros2bag_converter/tree/main/cli/node" target="_blank" rel="noopener noreferrer">Node CLI</a> ·
+    <a href="https://github.com/wuisabel-gif/ros2bag_converter/tree/main/cli/python" target="_blank" rel="noopener noreferrer">Python CLI</a> ·
+    <a href="https://github.com/wuisabel-gif/ros2bag_converter/tree/main/skills" target="_blank" rel="noopener noreferrer">agent skill</a>
+    — reads <span class="mono">.db3</span> &amp; <span class="mono">.mcap</span>
+  </span>
   <span class="copy">© 2026 wuisabel · <a href="https://github.com/wuisabel-gif/ros2bag_converter/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline">Apache-2.0</a></span>
 </footer>
 
