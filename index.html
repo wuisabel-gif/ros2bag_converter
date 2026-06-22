@@ -209,6 +209,20 @@ body::after{
 .demo-video .dv-label{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:12px;}
 .demo-video .dv-frame{position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#070c16;box-shadow:0 10px 40px rgba(0,0,0,.35);}
 .demo-video .dv-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+/* beyond the browser: CLI + skill */
+.channels{max-width:880px;margin:48px auto 0;text-align:center;}
+.channels .ch-head{font-family:var(--font-display);font-size:1.5rem;font-weight:400;letter-spacing:.02em;color:var(--ink);}
+.channels .ch-sub{margin:9px auto 22px;max-width:60ch;color:var(--ink-dim);font-family:var(--font-display);letter-spacing:.02em;line-height:1.5;}
+.ch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.ch-card{display:block;text-align:left;text-decoration:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;transition:.15s var(--ease);}
+.ch-card:hover{border-color:var(--signal-line);background:var(--surface-2);transform:translateY(-2px);}
+.ch-card .ch-k{font-family:var(--font-display);font-size:1.08rem;color:var(--ink);letter-spacing:.02em;}
+.ch-card .ch-cmd{margin:11px 0 9px;font-family:var(--font-mono);font-size:.72rem;color:var(--signal);background:#070c16;border:1px solid var(--line);border-radius:7px;padding:7px 9px;overflow-x:auto;white-space:nowrap;}
+.ch-card .ch-d{font-family:var(--font-display);font-size:.9rem;color:var(--ink-faint);letter-spacing:.02em;line-height:1.45;}
+.ch-note{margin:20px 0 0;color:var(--ink-faint);font-family:var(--font-display);letter-spacing:.02em;font-size:.95rem;}
+.ch-note a{color:var(--signal);text-decoration:none;}
+.ch-note a:hover{text-decoration:underline;}
+@media (max-width:680px){ .ch-grid{grid-template-columns:1fr;} }
 @keyframes spin{to{transform:rotate(360deg);}}
 
 /* compact loaded bar (replaces hero after load) */
@@ -493,6 +507,30 @@ main.shell{padding-bottom:32px;}
         <table class="dd-table" id="ddTable"></table>
         <div class="dd-tag dd-tag-ok">decoded · CSV / JSON</div>
       </div>
+    </div>
+
+    <!-- beyond the browser: CLI + skill -->
+    <div class="channels">
+      <div class="ch-head">Beyond the browser</div>
+      <p class="ch-sub">Same decoder and schemas, off the web — and these also read MCAP <span class="mono">.mcap</span>, not just <span class="mono">.db3</span>.</p>
+      <div class="ch-grid">
+        <a class="ch-card" href="https://github.com/wuisabel-gif/ros2bag_converter/tree/main/cli/node" target="_blank" rel="noopener noreferrer">
+          <div class="ch-k">Node.js CLI</div>
+          <div class="ch-cmd">ros2bag-convert bag.mcap -f csv</div>
+          <div class="ch-d">install with npm · pure-WASM SQLite, no native build</div>
+        </a>
+        <a class="ch-card" href="https://github.com/wuisabel-gif/ros2bag_converter/tree/main/cli/python" target="_blank" rel="noopener noreferrer">
+          <div class="ch-k">Python CLI</div>
+          <div class="ch-cmd">ros2bag-convert bag.db3 -f json</div>
+          <div class="ch-d">install with pip · standard library only</div>
+        </a>
+        <a class="ch-card" href="https://github.com/wuisabel-gif/ros2bag_converter/tree/main/skills" target="_blank" rel="noopener noreferrer">
+          <div class="ch-k">Agent skill</div>
+          <div class="ch-cmd">/ros2bag-convert &nbsp;·&nbsp; “convert my bag”</div>
+          <div class="ch-d">for Claude Code &amp; Codex</div>
+        </a>
+      </div>
+      <p class="ch-note">Reads SQLite <span class="mono">.db3</span> and MCAP <span class="mono">.mcap</span> · exports CSV &amp; JSON · <a href="https://github.com/wuisabel-gif/ros2bag_converter" target="_blank" rel="noopener noreferrer">View on GitHub →</a></p>
     </div>
   </section>
 
